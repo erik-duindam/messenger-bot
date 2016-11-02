@@ -261,7 +261,7 @@ class Bot extends EventEmitter {
       var method = elements[0];
       var signatureHash = elements[1];
 
-      var expectedHash = crypto.createHmac('sha1', APP_SECRET)
+      var expectedHash = crypto.createHmac('sha1', this.app_secret)
       .update(buf)
       .digest('hex');
 
