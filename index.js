@@ -233,11 +233,13 @@ class Bot extends EventEmitter {
 
   _getActionsObject (event) {
     return {
-      setTyping: (typingState, cb) => {
+      setTyping: (accessToken, typingState, cb) => {
         let senderTypingAction = typingState ? 'typing_on' : 'typing_off'
-        this.sendSenderAction(event.sender.id, senderTypingAction, cb)
+        this.sendSenderAction(event.sender.id, accessToken, senderTypingAction, cb)
       },
-      markRead: this.sendSenderAction.bind(this, event.sender.id, 'mark_seen')
+      markRead: (accessToken, cb) => {
+        this.sendSenderAction(event.sender.id, accessToken, 'mark_seen', cb);
+      }
     }
   }
 
