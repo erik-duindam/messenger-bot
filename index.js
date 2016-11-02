@@ -194,6 +194,8 @@ class Bot extends EventEmitter {
       let events = entry.messaging
 
       events.forEach((event) => {
+        event.page_id = entry.id;
+        
         // handle inbound messages and echos
         if (event.message) {
           if (event.message.is_echo) {
