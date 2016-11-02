@@ -10,24 +10,19 @@ class Bot extends EventEmitter {
     super()
 
     opts = opts || {}
-    
-    this.token = opts.token
+
     this.app_secret = opts.app_secret || false
     this.verify_token = opts.verify || false
     this.debug = opts.debug || false
   }
-  
-  setPageToken(token) {
-    this.token = token; 
-  }
 
-  getProfile (id, cb) {
+  getProfile (accessToken, id, cb) {
     if (!cb) cb = Function.prototype
 
     request({
       method: 'GET',
       uri: `https://graph.facebook.com/v2.6/${id}`,
-      qs: this._getQs({fields: 'first_name,last_name,profile_pic,locale,timezone,gender'}),
+      qs: this._getQs({ access_token: accessToken, fields: 'first_name,last_name,profile_pic,locale,timezone,gender' }),
       json: true
     }, (err, res, body) => {
       if (err) return cb(err)
@@ -37,13 +32,13 @@ class Bot extends EventEmitter {
     })
   }
 
-  sendMessage (recipient, payload, cb) {
+  sendMessage (recipient, accessToken, payload, cb) {
     if (!cb) cb = Function.prototype
 
     request({
       method: 'POST',
       uri: 'https://graph.facebook.com/v2.6/me/messages',
-      qs: this._getQs(),
+      qs: this._getQs({ access_token: accessToken }),
       json: {
         recipient: { id: recipient },
         message: payload
@@ -56,13 +51,13 @@ class Bot extends EventEmitter {
     })
   }
 
-  sendSenderAction (recipient, senderAction, cb) {
+  sendSenderAction (recipient, accessToken, senderAction, cb) {
     if (!cb) cb = Function.prototype
 
     request({
       method: 'POST',
       uri: 'https://graph.facebook.com/v2.6/me/messages',
-      qs: this._getQs(),
+      qs: this._getQs({ access_token: accessToken }),
       json: {
         recipient: {
           id: recipient
@@ -77,13 +72,13 @@ class Bot extends EventEmitter {
     })
   }
 
-  setThreadSettings (threadState, callToActions, cb) {
+  setThreadSettings (accessToken, threadState, callToActions, cb) {
     if (!cb) cb = Function.prototype
 
     request({
       method: 'POST',
       uri: 'https://graph.facebook.com/v2.6/me/thread_settings',
-      qs: this._getQs(),
+      qs: this._getQs({ access_token: accessToken }),
       json: {
         setting_type: 'call_to_actions',
         thread_state: threadState,
@@ -97,13 +92,13 @@ class Bot extends EventEmitter {
     })
   }
 
-  removeThreadSettings (threadState, cb) {
+  removeThreadSettings (accessToken, threadState, cb) {
     if (!cb) cb = Function.prototype
 
     request({
       method: 'DELETE',
       uri: 'https://graph.facebook.com/v2.6/me/thread_settings',
-      qs: this._getQs(),
+      qs: this._getQs({ access_token: accessToken }),
       json: {
         setting_type: 'call_to_actions',
         thread_state: threadState
@@ -116,28 +111,28 @@ class Bot extends EventEmitter {
     })
   }
 
-  setGetStartedButton (payload, cb) {
+  setGetStartedButton (accessToken, payload, cb) {
     if (!cb) cb = Function.prototype
 
-    return this.setThreadSettings('new_thread', payload, cb)
+    return this.setThreadSettings(accessToken, 'new_thread', payload, cb)
   }
 
-  setPersistentMenu (payload, cb) {
+  setPersistentMenu (accessToken, payload, cb) {
     if (!cb) cb = Function.prototype
 
-    return this.setThreadSettings('existing_thread', payload, cb)
+    return this.setThreadSettings(accessToken, 'existing_thread', payload, cb)
   }
 
-  removeGetStartedButton (cb) {
+  removeGetStartedButton (accessToken, cb) {
     if (!cb) cb = Function.prototype
 
-    return this.removeThreadSettings('new_thread', cb)
+    return this.removeThreadSettings(accessToken, 'new_thread', cb)
   }
 
-  removePersistentMenu (cb) {
+  removePersistentMenu (accessToken, cb) {
     if (!cb) cb = Function.prototype
 
-    return this.removeThreadSettings('existing_thread', cb)
+    return this.removeThreadSettings(accessToken, 'existing_thread', cb)
   }
 
   middleware () {
@@ -178,7 +173,6 @@ class Bot extends EventEmitter {
     if (typeof qs === 'undefined') {
       qs = {}
     }
-    qs['access_token'] = this.token
 
     if (this.debug) {
       qs['debug'] = this.debug
@@ -195,7 +189,7 @@ class Bot extends EventEmitter {
 
       events.forEach((event) => {
         event.page_id = entry.id;
-        
+
         // handle inbound messages and echos
         if (event.message) {
           if (event.message.is_echo) {
@@ -255,6 +249,26 @@ class Bot extends EventEmitter {
     }
 
     return res.end('Error, wrong validation token')
+  }
+
+  _verifySignature(req, res, buf) {
+    var signature = req.headers["x-hub-signature"];
+
+    if (!signature) {
+
+    } else {
+      var elements = signature.split('=');
+      var method = elements[0];
+      var signatureHash = elements[1];
+
+      var expectedHash = crypto.createHmac('sha1', APP_SECRET)
+      .update(buf)
+      .digest('hex');
+
+      if (signatureHash != expectedHash) {
+        throw new Error("Couldn't validate the request signature.");
+      }
+    }
   }
 
   _handleEvent (type, event) {
