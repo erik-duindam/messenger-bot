@@ -28,7 +28,7 @@ class Bot extends EventEmitter {
       if (err) return cb(err)
       if (body.error) return cb(body.error)
 
-      cb(null, body)
+      if (cb) cb(null, body)
     })
   }
 
@@ -47,7 +47,7 @@ class Bot extends EventEmitter {
       if (err) return cb(err)
       if (body.error) return cb(body.error)
 
-      cb(null, body)
+      if (cb) cb(null, body)
     })
   }
 
@@ -68,7 +68,7 @@ class Bot extends EventEmitter {
       if (err) return cb(err)
       if (body.error) return cb(body.error)
 
-      cb(null, body)
+      if (cb) cb(null, body)
     })
   }
 
@@ -88,7 +88,7 @@ class Bot extends EventEmitter {
       if (err) return cb(err)
       if (body.error) return cb(body.error)
 
-      cb(null, body)
+      if (cb) cb(null, body)
     })
   }
 
@@ -107,7 +107,7 @@ class Bot extends EventEmitter {
       if (err) return cb(err)
       if (body.error) return cb(body.error)
 
-      cb(null, body)
+      if (cb) cb(null, body)
     })
   }
 
