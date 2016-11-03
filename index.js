@@ -35,6 +35,8 @@ class Bot extends EventEmitter {
   sendMessage (recipient, accessToken, payload, cb) {
     if (!cb) cb = Function.prototype
 
+    console.log('Sending Messenger message to ' + recipient, payload);
+    
     request({
       method: 'POST',
       uri: 'https://graph.facebook.com/v2.6/me/messages',
