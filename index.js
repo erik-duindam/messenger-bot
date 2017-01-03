@@ -36,7 +36,7 @@ class Bot extends EventEmitter {
     if (!cb) cb = Function.prototype
 
     console.log('Sending Messenger message to ' + recipient, payload);
-    
+
     request({
       method: 'POST',
       uri: 'https://graph.facebook.com/v2.6/me/messages',
@@ -219,6 +219,11 @@ class Bot extends EventEmitter {
         // handle authentication
         if (event.optin) {
           this._handleEvent('authentication', event)
+        }
+
+        // handle referral
+        if (event.referral) {
+          this._handleEvent('referral', event)
         }
 
         // handle account_linking
